@@ -1,0 +1,245 @@
+---
+title: "sta 421 project (Life expectancy data analysis)"
+author: "Silas Kibet Reg No:AST/15/19"
+date: '2022-11-25'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+GROUP 5
+
+
+PROJECT OUTCOMES FOR THE ANALYSIS OF DATA ON DETERMINATION OF LIFE
+EXPECTANCY
+
+```{r}
+expectancy<-read.csv(file.choose())
+str(expectancy)
+summary(expectancy)
+```
+
+From the summary statistics the data distributiom for this data set's
+variables contains numerictype, one variable(status) which needs to be
+converted to a dummy variable and missing values. Data cleaning
+
+```{r}
+x<-expectancy
+sum(is.na(x))
+colSums(is.na(x))
+```
+
+The number of missing values in the data set is 2563, which are contained
+by 14 variables in the data set. This makes about 3% of all the data
+points in this data set. The best way of dealing with these missing
+values is by imputation. The missing values in the dataset will be
+imputed using their respective median values.
+
+```{r}
+x[is.na(x$Hepatitis.B),"Hepatitis.B"]<-median(x$Hepatitis.B,na.rm=TRUE)
+x[is.na(x$Polio),"Polio"]<-median(x$Polio,na.rm=TRUE)
+x[is.na(x$Income.composition.of.resources),"Income.composition.of.resources"]<-median(x$Income.composition.of.resources,na.rm=TRUE)
+x[is.na(x$BMI),"BMI"]<-median(x$BMI,na.rm=TRUE)
+x[is.na(x$GDP),"GDP"]<-median(x$GDP,na.rm=TRUE)
+x[is.na(x$Schooling),"Schooling"]<-median(x$Schooling,na.rm=TRUE)
+x[is.na(x$polio),"Polio"]<-median(x$Polio,na.rm = TRUE)
+x[is.na(x$Life.expectancy),"Life.expectancy"]<-median(x$Life.expectancy,na.rm=TRUE)
+x[is.na(x$Total.expenditure),"Total.expenditure"]<-median(x$Total.expenditure,na.rm=TRUE)
+x[is.na(x$thinness..1.19.years),"thinness..1.19.years"]<-median(x$thinness..1.19.years,na.rm=TRUE)
+x[is.na(x$Adult.Mortality),"Adult.Mortality"]<-median(x$Adult.Mortality,na.rm=TRUE)
+x[is.na(x$Diphtheria),"Diphtheria"]<-median(x$Diphtheria ,na.rm=TRUE)
+x[is.na(x$thinness.5.9.years),"thinness.5.9.years"]<-median(x$thinness.5.9.years,na.rm=TRUE)
+x[is.na(x$Population),"Population"]<-median(x$Population,na.rm=TRUE)
+x[is.na(x$Alcohol),"Alcohol"]<-median(x$Population,na.rm=TRUE)
+sum(is.na(x))
+```
+
+From the above output the sum of NA's in our dataset is now zero The
+next thing is converting the status variable to a dummy variable
+
+```{r}
+x$Status<-ifelse(x$Status=="Developed",1,0)
+head(x$Status)
+```
+
+The variable status is now in zeros and ones The next procedure inline
+is carrying out data analysis 1.Identifying variables which are
+significant
+
+```{r}
+lm(Life.expectancy~.,data=x)
+
+```
+
+Variables that are significant are: Year
+Status
+Adult.Mortality
+infant.deaths
+Alcohol
+percentage.expenditure
+Hepatitis.B Country 
+#2. Should a country having a lower life expectancy
+value(<65) increase its healthcare expenditure in order to improve its
+average lifespan?
+
+```{r}
+library(ggplot2)
+z<-x$Total.expenditure
+y<-x$Life.expectancy
+k<-subset(x,Life.expectancy<65,select=c(Life.expectancy,Total.expenditure))
+ggplot(k,aes(y=Life.expectancy,x=Total.expenditure)) + geom_point(col=c("blue")) + ggtitle("A GRAPH OF TOTAL EXPENDITURE AGAINST LIFE EXPECTANCY") +xlab("EXPENDITURE") + ylab("LIFE EXPECTANCY") + geom_smooth(method="lm",col="black")
+```
+
+From the above plot an increase in expenditure negatively affects the
+life expectancy. 3. How does Infant and Adult mortality rates affect
+life expectancy.
+
+```{r}
+lm(Life.expectancy~infant.deaths+Adult.Mortality,data=x)#It negatively affects life expectancy.
+```
+
+```{r}
+ggplot(x,aes(y=Life.expectancy,x=infant.deaths)) + geom_point(col=c("red")) +ggtitle("A GRAPH OF INFANT DEATHS AGAINST LIFE EXPECTANCY")+ xlab("INFANT DEATHS") + ylab("LIFE EXOECTANCY") + geom_smooth(method="lm",col="black")
+```
+
+Infant deaths negatively affects life expectancy as evident on the above
+plot having a negative slope.
+
+```{r}
+lm(Life.expectancy~Adult.Mortality,data=x)
+```
+
+```{r}
+ggplot(x,aes(y=Life.expectancy,x=Adult.Mortality)) + geom_point(col=c("purple")) +ggtitle("A PLOT OF ADULT MORTALITY AGAINST LIFE EXPECTANCY ") + xlab("ADULT MORTALITY") + ylab("LIFE EXPECTANCY") + geom_smooth(method="lm",col="black")
+
+```
+
+From the above plot and linear model. It is evident that Adult Mortality
+reduces Life expectancy of individuals as a result of negative slope of
+the graph and the negative intercept of Adult mortality. #4. Does Life
+Expectancy has positive or negative correlation with eating habits,
+lifestyle, exercise, smoking, drinking alcohol etc. used pearson
+correlation to determine the correlation #correlation between Life
+expectancy and BMI(for eating habits)
+
+```{r}
+cor.test(x$BMI ,x$Life.expectancy,alternative = c("two.sided","less","greater"),method="pearson",exact=NULL,conf.level=0.95,ccontinuity=FALSE)
+
+```
+
+For BMI and Life expectancy it exhibits a positive correlation though
+weakly of 0.5569 #Correlation between life expectancy and alcohol
+
+```{r}
+cor.test(x$Alcohol,x$Life.expectancy,x$BMI ,alternative = c("greater"),method="pearson",exact=NULL,conf.level=0.95,ccontinuity=FALSE)#Variables are positively correlated
+```
+
+```{r}
+cor.test(x$Alcohol,x$Life.expectancy,alternative = c("two.sided","less","greater"),method="pearson",exact=NULL,conf.level=0.95,ccontinuity=FALSE)
+
+```
+
+For Alcohol and Life expectancy there exists a positive correlation but
+very weak, correlation of 0.022 #5. What is the impact of schooling on
+the lifespan of humans?
+
+```{r}
+lm(Life.expectancy~Schooling,data=x)#It positively affects the lifespan of people/increases lifespan
+
+```
+
+Schooling increases the life expectancy of individuals by 2.077
+
+```{r}
+ggplot(x,aes(y=Life.expectancy,x=Schooling)) + geom_point(col=c("red")) +ggtitle("A GRAPH OF SCHOOLING AGAINST LIFE EXPECTANCY") + xlab("SCHOOLING") + ylab("LIFE EXPECTANCY") + geom_smooth(method="lm",col="black")
+```
+
+As evidentfrom the above plot with a positive slope, schooling increases
+the life expectancy of indivduals. #6. Does Life Expectancy have
+positive or negative relationship with drinking alcohol?
+
+```{r}
+cor.test(x$Alcohol,x$Life.expectancy,alternative = c("two.sided","less","greater"),method="pearson",exact=NULL,conf.level=0.95,ccontinuity=FALSE)
+
+```
+
+Alcohol and Life expectancy are positively correlated but weakly. #7. Do
+densely populated countries tend to have lower life expectancy? #we must
+scale the population variable first/normalization
+
+```{r}
+x$Population<-log(x$Population)
+ggplot(x,aes(y=Life.expectancy,x=Population)) + geom_point(col=c("orange")) + geom_smooth(method="lm",col="red") + xlab("POPULATION") + ylab("LIFE EXPECTANCY") + ggtitle("A GRAPH OF POPULATION AGAINST LIFE EXPECTANCY")
+```
+
+From the above plot it is so clear that countries with low populations
+have higher life expectancies as compared to over populated countries.
+Though most of the people lie in the brackets of medium population. #8.
+What is the impact of Immunization coverage on life Expectancy?
+
+```{r}
+summary(lm(Life.expectancy~Hepatitis.B+Polio+Measles+Diphtheria,data=x))
+
+```
+
+#BUILDING A PREDICTIVE MODEL TO EXPLAIN THE EFFECTS OF DRINKING ALCOHOL,HIV/AIDS,SCHOOLING,BMI,GDP,POLIO,MEASLES,HEPATITIS BSTATUS, ADULT MORTALITY INFANT DEATHS AND POPULATION ON LIFE EXPECTANCY.
+
+```{r}
+k<-subset(x,select=c(Life.expectancy,Alcohol,Status,Measles,Hepatitis.B,BMI,Polio,infant.deaths,HIV.AIDS,Schooling,GDP,Population,Adult.Mortality))
+
+```
+```{r}
+library(corrplot)
+correlation<- cor(x[,c(4,5,7,8,11,14,16,17,18,22)])
+corrplot(correlation,method = "square")
+```
+#As per the corrplot we identify Adult Mortality,BMI,Schooling,HIV/AIDS to have great effects on the life expectancy.
+
+#Loading required packages.
+```{r}
+library(tidyverse)
+library(caret)
+library(dplyr)
+library(caTools)
+```
+#Splitting dataset into testing and training sets.
+```{r}
+set.seed(123)
+training.sampl=sample.split(x$Life.expectancy,SplitRatio = 0.8)
+train_data=subset(k,training.sampl==TRUE)
+test_data=subset(k,training.sampl==FALSE)
+
+```
+
+#Building the model
+
+```{r}
+model1<-lm(Life.expectancy~.,data=train_data)
+model1$coef
+```
+
+#making predictions
+
+```{r}
+predictions<-model1 %>% predict(test_data)
+```
+
+#Assessing model performance 
+#using prediction error, RMSE
+
+```{r}
+#RMSE
+RMSE(predictions,test_data$Life.expectancy)
+#Mean
+mean(test_data$Life.expectancy)
+```
+The prediction error RMSE is 4.262262 representing an error rate of 6.2% which is relatively low. Hence this is a good predictive model.
+
+#Using R-square
+
+```{r}
+R2(predictions,test_data$Life.expectancy)
+```
+
+R2 value is 0.80 which implies 80 % of life expectancy can be explained by the predictor variables . This model is not bad in prediction.
