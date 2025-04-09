@@ -1,6 +1,6 @@
 ---
 title: "sta 421 project (Life expectancy data analysis)"
-author: "Silas Kibet Reg No:AST/15/19"
+author: "Silas Kibet"
 date: '2022-11-25'
 output: html_document
 ---
